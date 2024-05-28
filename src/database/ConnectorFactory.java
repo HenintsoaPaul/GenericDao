@@ -41,7 +41,7 @@ public abstract class ConnectorFactory {
                     dbPassword = properties.get( "db.password" );
 
             return getConnector( dbHost, dbPort, dbName, dbUser, dbPassword, dbType );
-        } catch ( IOException | ClassNotFoundException e ) {
+        } catch ( ClassNotFoundException e ) {
             throw new Exception( "Error loading configuration properties: " + e.getMessage() );
         }
     }
