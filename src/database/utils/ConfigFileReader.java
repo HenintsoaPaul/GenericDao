@@ -30,7 +30,7 @@ public class ConfigFileReader {
      *
      * @param configFileName The name of the configuration file to read.
      */
-    public ConfigFileReader(String configFileName) {
+    public ConfigFileReader( String configFileName ) {
         this.configFilePathFromProjectDirectory = CONFIGS_FOLDER + configFileName;
     }
 
@@ -38,18 +38,17 @@ public class ConfigFileReader {
      * Loads properties from the specified configuration file into a Map.
      *
      * @return A Map containing the loaded properties.
-     * @throws IOException If an I/O error occurs during the loading process.
      */
-    public Map<String, String> loadProperties() throws IOException {
+    public Map<String, String> loadProperties() {
         Map<String, String> map = new HashMap<>();
-        try (InputStream input = new FileInputStream(this.configFilePathFromProjectDirectory)) {
+        try ( InputStream input = new FileInputStream( this.configFilePathFromProjectDirectory ) ) {
             Properties properties = new Properties();
-            properties.load(input);
-            for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-                map.put((String) entry.getKey(), (String) entry.getValue());
+            properties.load( input );
+            for ( Map.Entry<Object, Object> entry : properties.entrySet() ) {
+                map.put( ( String ) entry.getKey(), ( String ) entry.getValue() );
             }
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to load configuration properties", e);
+        } catch ( IOException e ) {
+            throw new RuntimeException( "Failed to load configuration properties", e );
         }
         return map;
     }
