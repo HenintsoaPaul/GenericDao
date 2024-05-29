@@ -40,7 +40,9 @@ public class Main {
 
 ## Query
 
-Let us admit that you have the following class:
+Let us admit that you have the following classes:
+
+- Employee.java
 ```java
 package entity;
 
@@ -67,55 +69,54 @@ public class Employee {
 }
 ```
 
-### Insert Query
-
+- Main.java
 ```java
-import database.connector.ConnectorFactory;
-import database.connector.DatabaseConnector;
-import database.query.GenericInsert;
-import entity.Employee;
+import java.sql.SQLException;
 
-public class Main {
-  public static void main( String[] args )
-          throws Exception {
-    Employee emp = new Employee( 1, "henin", "01/01/2001" );
-    String config = "db.properties";
-    DatabaseConnector databaseConnector = ConnectorFactory.getConnector( config );
-
-    // 1st method
-    int nbRows = GenericInsert.insert( emp, databaseConnector );
-    System.out.println( nbRows + " row(s) inserted." );
-    
-    // 2nd method
-    int nbRows = GenericInsert.insert( emp, databaseConnector.getConnection() );
-    System.out.println( nbRows + " row(s) inserted." );
-  }
-}
-```
-
-### Delete Query
-
-```java
 import database.connector.ConnectorFactory;
 import database.connector.DatabaseConnector;
 import database.query.GenericDelete;
+import database.query.GenericInsert;
+import database.query.GenericUpdate;
 import entity.Employee;
 
-public class Main {
-  public static void main( String[] args )
-          throws Exception {
-    String config = "db.properties";
-    DatabaseConnector databaseConnector = ConnectorFactory.getConnector( config );
+public class MainApp {
+    public static void main( String[] args )
+            throws Exception {
+        String config = "db.properties";
+        DatabaseConnector databaseConnector = ConnectorFactory.getConnector( config );
+        insert( databaseConnector );
+        update( databaseConnector );
+        delete( databaseConnector );
+    }
 
-    // Delete by idPrimaryKey
-    int nbRows = GenericDelete.deleteById( new Employee(), 1, databaseConnector );
-    // int nbRows = GenericDelete.deleteById( new Employee(), 1, databaseConnector.getConnection() );
-    System.out.println( nbRows + " row(s) deleted." );
-    
-    // Delete all
-    int nbRows = GenericDelete.deleteAll( new Employee(), databaseConnector );
-    // int nbRows = GenericDelete.deleteAll( new Employee(), databaseConnector.getConnection() );
-    System.out.println( nbRows + " row(s) deleted." );
-  }
+    private static void update( DatabaseConnector databaseConnector )
+            throws ClassNotFoundException, IllegalAccessException, SQLException {
+        Employee heninUpd = new Employee( 1, "henintsoa", "01/01/2001" );
+        int nbRows = GenericUpdate.update( heninUpd, databaseConnector );
+        System.out.println( nbRows + " row(s) updated" );
+    }
+
+    public static void insert( DatabaseConnector databaseConnector )
+            throws ClassNotFoundException, IllegalAccessException, SQLException {
+        Employee emp1 = new Employee( 1, "henin", "01/01/2001" ),
+                emp2 = new Employee( 2, "malak", "01/01/2001" );
+        int nbRows = GenericInsert.insert( emp1, databaseConnector );
+        System.out.println( nbRows + " row(s) inserted." );
+
+        nbRows = GenericInsert.insert( emp2, databaseConnector );
+        System.out.println( nbRows + " row(s) inserted." );
+    }
+
+    public static void delete( DatabaseConnector databaseConnector )
+            throws ClassNotFoundException, IllegalAccessException, SQLException {
+        Employee emp1 = new Employee( 1, "henin", "01/01/2001" ),
+                emp2 = new Employee( 2, "malak", "01/01/2001" );
+
+        int nbRows = GenericDelete.deleteAll( emp1, databaseConnector );
+        // int nbRows = GenericDelete.deleteById(emp2, 1, databaseConnector);
+
+        System.out.println( nbRows + " row(s) deleted." );
+    }
 }
 ```
