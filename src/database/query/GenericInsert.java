@@ -14,35 +14,25 @@ public class GenericInsert {
     public static String writeInsertQuery( Object object )
             throws IllegalAccessException {
         Class<?> clazz = object.getClass();
-        // tableName
         String tableName = Util.getTableName( clazz );
-        // columns and values
-        List<String> listColNames = new ArrayList<>(),
-                listColValues = new ArrayList<>();
+        List<String> listColNames = new ArrayList<>(), listColValues = new ArrayList<>();
         for ( Field field : clazz.getDeclaredFields() ) {
             listColNames.add( Util.getColumnName( field ) );
             listColValues.add( Util.getColumnValue( field, object ) );
         }
-        // final query
         String columns = String.join( ", ", listColNames ),
                 values = String.join( ", ", listColValues );
-        return "INSERT INTO " + tableName + " ( " + columns + " ) VALUES ( " + values + " )";
+        return "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")";
     }
 
     public static int insert( Object object, Connection connection )
             throws IllegalAccessException, SQLException {
         int nbRows;
-        PreparedStatement preparedStatement = null;
-        try {
+        try ( PreparedStatement preparedStatement = connection.prepareStatement( writeInsertQuery( object ) ) ) {
             connection.setAutoCommit( false );
-            preparedStatement = connection.prepareStatement( writeInsertQuery( object ) );
             nbRows = preparedStatement.executeUpdate();
             if ( nbRows > 0 ) {
                 connection.commit();
-            }
-        } finally {
-            if ( preparedStatement != null && !preparedStatement.isClosed() ) {
-                preparedStatement.close();
             }
         }
         return nbRows;
