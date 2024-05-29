@@ -46,9 +46,7 @@ public class GenericSelect {
         List<T> results = new ArrayList<>();
         try ( PreparedStatement preparedStatement = connection.prepareStatement( query );
               ResultSet resultSet = preparedStatement.executeQuery() ) {
-            if ( !resultSet.next() ) {
-                throw new SQLException( "0 row matching! ResultSet is empty." );
-            } else {
+            if ( resultSet.next() ) {
                 do {
                     T newInstance = tClass.getDeclaredConstructor().newInstance();
                     setAttributesValues( newInstance, resultSet );
@@ -169,10 +167,8 @@ public class GenericSelect {
 
 
     // FIND ALL PAGINATION
-    public static String writeQueryFindAll( Object object, List<String> columnsNames,
-                                            int offSet, int limit, String DB_TYPE ) {
-        // Query without pagination
-        if ( offSet == 0 && limit == 0 ) {
+    public static String writeQueryFindAll( Object object, List<String> columnsNames, int offSet, int limit, String DB_TYPE ) {
+        if ( offSet == 0 && limit == 0 ) { // Query without pagination
             return writeQueryFindAll( object, columnsNames );
         }
         String from = fromFindAll( object );
@@ -184,6 +180,24 @@ public class GenericSelect {
             throws SQLException, InvocationTargetException, NoSuchMethodException,
             InstantiationException, IllegalAccessException {
         String query = writeQueryFindAll( object, columnsNames, offSet, limit, DB_TYPE );
+        return exeSelectQuery( query, ( Class<T> ) object.getClass(), connection );
+    }
+
+
+    // FIND ALL BY CRITERIA PAGINATION
+    public static String writeQueryFindByCriteria( Object object, List<String> columnsNames, int offSet, int limit, String DB_TYPE ) {
+        if ( offSet == 0 && limit == 0 ) { // Query without pagination
+            return writeQueryFindByCriteria( object, columnsNames );
+        }
+        String from = fromFindByCriteria( object );
+        return returnPaginationQuery( columnsNames, offSet, limit, DB_TYPE, from );
+    }
+
+    public static <T extends GenericEntity> List<T> findByCriteria( Object object, List<String> columnsNames, Connection connection,
+                                                                    int offSet, int limit, String DB_TYPE )
+            throws SQLException, InvocationTargetException, NoSuchMethodException,
+            InstantiationException, IllegalAccessException {
+        String query = writeQueryFindByCriteria( object, columnsNames, offSet, limit, DB_TYPE );
         return exeSelectQuery( query, ( Class<T> ) object.getClass(), connection );
     }
 }
