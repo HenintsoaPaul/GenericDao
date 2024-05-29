@@ -105,13 +105,16 @@ public class MainApp {
           throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException,
           ClassNotFoundException, SQLException {
     List<Employee> list;
-    Connection connection = databaseConnector.getConnection();
-    list = GenericSelect.findAll( Employee.class, null, connection );
+    Connection connection = databaseConnector.getConnection();;
+    list = GenericSelect.findAll( new Employee(), null, connection );
+    list = GenericSelect.findAll( new Employee(), null, connection, 0, 1, "pg" );
 
     Employee heninUpd = new Employee( 1, "henintsoa", "01/01/2001" );
     list = GenericSelect.findByCriteria( heninUpd, null, connection );
+    list = GenericSelect.findByCriteria( heninUpd, null, connection, 1, 1, "pg" );
 
     list = GenericSelect.findInInterval( heninUpd, null, connection, "idEmployee", 0, 2);
+    list = GenericSelect.findInInterval( heninUpd, null, connection, 1, 2, "pg", "idEmployee", 2, 2);
 
     System.out.println( list.size() );
   }

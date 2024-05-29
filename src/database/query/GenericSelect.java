@@ -95,7 +95,7 @@ public class GenericSelect {
     }
 
 
-    // FIND ALL BY CRITERIA
+    // FIND BY CRITERIA
     public static String fromFindByCriteria( Object object ) {
         Class<?> clazz = object.getClass();
         String tableName = QueryUtil.getTableName( clazz ),
@@ -134,7 +134,7 @@ public class GenericSelect {
     }
 
 
-    // FIND ALL IN INTERVAL
+    // FIND IN INTERVAL
     public static String fromFindInInterval( Object object, String fieldName, Number minValue, Number maxValue )
             throws GenericDaoException {
         Class<?> clazz = object.getClass();
@@ -166,7 +166,7 @@ public class GenericSelect {
     }
 
 
-    // FIND ALL PAGINATION
+    // FIND ALL WITH PAGINATION
     public static String writeQueryFindAll( Object object, List<String> columnsNames, int offSet, int limit, String DB_TYPE ) {
         if ( offSet == 0 && limit == 0 ) { // Query without pagination
             return writeQueryFindAll( object, columnsNames );
@@ -184,7 +184,7 @@ public class GenericSelect {
     }
 
 
-    // FIND ALL BY CRITERIA PAGINATION
+    // FIND BY CRITERIA WITH PAGINATION
     public static String writeQueryFindByCriteria( Object object, List<String> columnsNames, int offSet, int limit, String DB_TYPE ) {
         if ( offSet == 0 && limit == 0 ) { // Query without pagination
             return writeQueryFindByCriteria( object, columnsNames );
@@ -198,6 +198,27 @@ public class GenericSelect {
             throws SQLException, InvocationTargetException, NoSuchMethodException,
             InstantiationException, IllegalAccessException {
         String query = writeQueryFindByCriteria( object, columnsNames, offSet, limit, DB_TYPE );
+        return exeSelectQuery( query, ( Class<T> ) object.getClass(), connection );
+    }
+
+
+    // FIND IN INTERVAL WITH PAGINATION
+    public static String writeQueryFindInInterval( Object object, List<String> columnsNames, int offSet, int limit,
+                                                   String DB_TYPE, String fieldName, Number minValue, Number maxValue )
+            throws GenericDaoException {
+        if ( offSet == 0 && limit == 0 ) { // Query without pagination
+            return writeQueryFindInInterval( object, columnsNames, fieldName, minValue, maxValue );
+        }
+        String from = fromFindInInterval( object, fieldName, minValue, maxValue );
+        return returnPaginationQuery( columnsNames, offSet, limit, DB_TYPE, from );
+    }
+
+    public static <T extends GenericEntity> List<T> findInInterval( Object object, List<String> columnsNames, Connection connection,
+                                                                    int offSet, int limit, String DB_TYPE, String fieldName,
+                                                                    Number minValue, Number maxValue )
+            throws SQLException, InvocationTargetException, NoSuchMethodException,
+            InstantiationException, IllegalAccessException {
+        String query = writeQueryFindInInterval( object, columnsNames, offSet, limit, DB_TYPE, fieldName, minValue, maxValue );
         return exeSelectQuery( query, ( Class<T> ) object.getClass(), connection );
     }
 }
