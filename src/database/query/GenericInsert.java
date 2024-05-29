@@ -5,7 +5,6 @@ import database.utils.QueryUtil;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,19 +26,14 @@ public class GenericInsert {
 
     public static int insert( Object object, Connection connection )
             throws IllegalAccessException, SQLException {
-        int nbRows;
-        try ( PreparedStatement preparedStatement = connection.prepareStatement( writeInsertQuery( object ) ) ) {
-            connection.setAutoCommit( false );
-            nbRows = preparedStatement.executeUpdate();
-            if ( nbRows > 0 ) {
-                connection.commit();
-            }
-        }
-        return nbRows;
+        String query = writeInsertQuery( object );
+        return QueryUtil.executeUpdateQuery( query, connection, 1 );
     }
 
     public static int insert( Object object, DatabaseConnector databaseConnector )
             throws SQLException, ClassNotFoundException, IllegalAccessException {
-        return insert( object, databaseConnector.getConnection() );
+        try ( Connection connection = databaseConnector.getConnection() ) {
+            return insert( object, connection );
+        }
     }
 }

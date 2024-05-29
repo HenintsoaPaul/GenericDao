@@ -56,7 +56,7 @@ public class QueryUtil {
     public static int executeUpdateQuery( String query, Connection connection, int nbRowsToUpdate )
             throws SQLException {
         try ( PreparedStatement preparedStatement = connection.prepareStatement( query ) ) {
-            if ( nbRowsToUpdate != -1 ) {
+            if ( nbRowsToUpdate == -1 ) {
                 return preparedStatement.executeUpdate();
             }
             else {
