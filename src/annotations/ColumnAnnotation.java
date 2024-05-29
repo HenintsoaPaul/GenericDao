@@ -6,11 +6,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention( RetentionPolicy.RUNTIME )
-@Target( ElementType.TYPE )
+@Target( ElementType.FIELD )
 public @interface ColumnAnnotation {
-    String columnName();
+    String columnName() default "";
 
-    boolean quote() default false;
+    boolean quoted() default false;
 
     boolean primaryKey() default false;
 
