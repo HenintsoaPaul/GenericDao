@@ -9,7 +9,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GenericSelect {
     private static Object getFieldValue( Field field, ResultSet resultSet )
@@ -56,6 +58,7 @@ public class GenericSelect {
         return results;
     }
 
+
     // FIND ALL
     public static String fromFindAll( Object object ) {
         return QueryUtil.getTableName( object.getClass() );
@@ -70,5 +73,44 @@ public class GenericSelect {
             InstantiationException, IllegalAccessException {
         String query = writeQueryFindAll( tClass, columnsNames );
         return exeSelectQuery( query, tClass, connection );
+    }
+
+
+    // FIND ALL BY CRITERIA
+    public static String fromFindByCriteria( Object object ) {
+        Class<?> clazz = object.getClass();
+        String tableName = QueryUtil.getTableName( clazz ),
+                criteria = Arrays.stream( clazz.getDeclaredFields() )
+                        .peek( field -> field.setAccessible( true ) )
+                        .filter( field -> {
+                            try {
+                                return field.get( object ) != null;
+                            } catch ( IllegalAccessException e ) {
+                                throw new RuntimeException( e );
+                            }
+                        } )
+                        .map( field -> {
+                            try {
+                                Object columnValue = field.get( object );
+                                String strColumnValue = columnValue instanceof Number ?
+                                        columnValue.toString() : "'" + columnValue + "'";
+                                return QueryUtil.getColumnName( field ) + " = " + strColumnValue;
+                            } catch ( IllegalAccessException e ) {
+                                throw new RuntimeException( e );
+                            }
+                        } )
+                        .collect( Collectors.joining( " AND " ) );
+        return tableName + ( criteria.isEmpty() ? "" : " WHERE " + criteria );
+    }
+
+    public static String writeQueryFindByCriteria( Object object, List<String> columnsNames ) {
+        return QueryUtil.selectColumns( columnsNames ) + " FROM " + fromFindByCriteria( object );
+    }
+
+    public static <T extends GenericEntity> List<T> findByCriteria( Object object, List<String> columnsNames, Connection connection )
+            throws SQLException, InvocationTargetException, NoSuchMethodException,
+            InstantiationException, IllegalAccessException {
+        String query = writeQueryFindByCriteria( object, columnsNames );
+        return exeSelectQuery( query, ( Class<T> ) object.getClass(), connection );
     }
 }
