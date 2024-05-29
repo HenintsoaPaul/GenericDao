@@ -19,13 +19,49 @@
 - Add the required database drivers to the `lib/` folder.
 
 ```java
+import database.connector.ConnectorFactory;
+import database.connector.DatabaseConnector;
+import java.sql.Connection;
+
+public class Main {
+  public static void main(String[] args) throws Exception {
     String config = "db.properties";
     DatabaseConnector databaseConnector = ConnectorFactory.getConnector(config);
     Connection conn = databaseConnector.getConnection();
     if ( conn != null ) {
-        System.out.println("Connected to the database");
-        conn.close();
+      System.out.println("Connected to the database");
+      conn.close();
     } else {
-        System.out.println("Failed to connect to the database");
+      System.out.println("Failed to connect to the database");
     }
+  }
+}
+```
+
+## Query
+
+### Insert Query
+
+```java
+import database.connector.ConnectorFactory;
+import database.connector.DatabaseConnector;
+import database.query.GenericInsert;
+import entity.Employee;
+
+public class Main {
+  public static void main( String[] args )
+          throws Exception {
+    Employee emp = new Employee( 1, "henin", "01/01/2001" );
+    String config = "db.properties";
+    DatabaseConnector databaseConnector = ConnectorFactory.getConnector( config );
+
+    // 1st method
+    int nbRows = GenericInsert.insert( emp, databaseConnector );
+    System.out.println( nbRows + " row(s) inserted." );
+    
+    // 2nd method
+    int nbRows = GenericInsert.insert( emp, databaseConnector.getConnection() );
+    System.out.println( nbRows + " row(s) inserted." );
+  }
+}
 ```
