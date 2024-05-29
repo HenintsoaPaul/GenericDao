@@ -1,12 +1,7 @@
-package database;
+package database.connector;
 
-import database.connector.DatabaseConnector;
-import database.connector.MSSQLConnector;
-import database.connector.MySQLConnector;
-import database.connector.PgConnector;
 import database.utils.ConfigFileReader;
 
-import java.io.IOException;
 import java.util.Map;
 
 public abstract class ConnectorFactory {
