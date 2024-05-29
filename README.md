@@ -40,32 +40,42 @@ public class Main {
 
 ## Query
 
+***
+**N.B**:
+
+1. All fields of Employee.java that are columns of the relation must be annotated with `@ColumnAnnotation`.
+    
+2. All entities like Employee.java must implement the `GenericEntity.java` interface.
+***
+
 Let us admit that you have the following classes:
 
 - Employee.java
+
 ```java
 package entity;
 
 import annotations.ColumnAnnotation;
 import annotations.TableAnnotation;
+import database.query.GenericEntity;
 
 @TableAnnotation( tableName = "emp" )
-public class Employee {
-    @ColumnAnnotation( columnName = "id_emp", primaryKey = true )
-    int idEmployee;
-    @ColumnAnnotation( columnName = "nom_emp", quoted = true )
-    String employeeName;
-    @ColumnAnnotation( columnName = "date_naissance", quoted = true )
-    String employeeBornDate;
+public class Employee implements GenericEntity {
+  @ColumnAnnotation( columnName = "id_emp", primaryKey = true )
+  int idEmployee;
+  @ColumnAnnotation( columnName = "nom_emp", quoted = true )
+  String employeeName;
+  @ColumnAnnotation( columnName = "date_naissance", quoted = true )
+  String employeeBornDate;
 
-    public Employee() {
-    }
+  public Employee() {
+  }
 
-    public Employee( int idEmployee, String employeeName, String employeeBornDate ) {
-        this.idEmployee = idEmployee;
-        this.employeeName = employeeName;
-        this.employeeBornDate = employeeBornDate;
-    }
+  public Employee( int idEmployee, String employeeName, String employeeBornDate ) {
+    this.idEmployee = idEmployee;
+    this.employeeName = employeeName;
+    this.employeeBornDate = employeeBornDate;
+  }
 }
 ```
 
@@ -88,7 +98,23 @@ public class MainApp {
         insert( databaseConnector );
         update( databaseConnector );
         delete( databaseConnector );
+        select( databaseConnector );
     }
+
+  private static void select( DatabaseConnector databaseConnector )
+          throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException,
+          ClassNotFoundException, SQLException {
+    List<Employee> list;
+    Connection connection = databaseConnector.getConnection();
+    list = GenericSelect.findAll( Employee.class, null, connection );
+
+    Employee heninUpd = new Employee( 1, "henintsoa", "01/01/2001" );
+    list = GenericSelect.findByCriteria( heninUpd, null, connection );
+
+    list = GenericSelect.findInInterval( heninUpd, null, connection, "idEmployee", 0, 2);
+
+    System.out.println( list.size() );
+  }
 
     private static void update( DatabaseConnector databaseConnector )
             throws ClassNotFoundException, IllegalAccessException, SQLException {

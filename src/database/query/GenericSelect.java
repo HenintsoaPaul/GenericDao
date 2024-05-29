@@ -1,5 +1,7 @@
 package database.query;
 
+import annotations.ColumnAnnotation;
+import database.GenericDaoException;
 import database.utils.QueryUtil;
 
 import java.lang.reflect.Field;
@@ -111,6 +113,38 @@ public class GenericSelect {
             throws SQLException, InvocationTargetException, NoSuchMethodException,
             InstantiationException, IllegalAccessException {
         String query = writeQueryFindByCriteria( object, columnsNames );
+        return exeSelectQuery( query, ( Class<T> ) object.getClass(), connection );
+    }
+
+
+    // FIND ALL IN INTERVAL
+    public static String fromFindInInterval( Object object, String fieldName, Number minValue, Number maxValue )
+            throws GenericDaoException {
+        Class<?> clazz = object.getClass();
+        String tableName = QueryUtil.getTableName( clazz ), columnName = "";
+        for ( Field field : clazz.getDeclaredFields() ) {
+            if ( field.getName().equals( fieldName ) && field.isAnnotationPresent( ColumnAnnotation.class ) ) {
+                columnName = QueryUtil.getColumnName( field );
+                break;
+            }
+        }
+        if ( columnName.isEmpty() ) {
+            throw new GenericDaoException( fieldName + " is not a column of the relation \"" + tableName + "\"." );
+        }
+        return tableName + " WHERE " + columnName + " BETWEEN " + minValue + " AND " + maxValue;
+    }
+
+    public static String writeQueryFindInInterval( Object object, List<String> columnsNames,
+                                                   String fieldName, Number minValue, Number maxValue )
+            throws GenericDaoException {
+        return QueryUtil.selectColumns( columnsNames ) + " FROM " + fromFindInInterval( object, fieldName, minValue, maxValue );
+    }
+
+    public static <T extends GenericEntity> List<T> findInInterval( Object object, List<String> columnsNames, Connection connection,
+                                                                    String fieldName, Number minValue, Number maxValue )
+            throws SQLException, InvocationTargetException, NoSuchMethodException,
+            InstantiationException, IllegalAccessException {
+        String query = writeQueryFindInInterval( object, columnsNames, fieldName, minValue, maxValue );
         return exeSelectQuery( query, ( Class<T> ) object.getClass(), connection );
     }
 }
