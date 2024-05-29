@@ -115,7 +115,6 @@ public class MainApp {
 
         int nbRows = GenericDelete.deleteAll( emp1, databaseConnector );
         // int nbRows = GenericDelete.deleteById(emp2, 1, databaseConnector);
-
         System.out.println( nbRows + " row(s) deleted." );
     }
 }

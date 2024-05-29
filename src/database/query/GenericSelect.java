@@ -11,7 +11,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class GenericSelect {
+public class GenericSelect {
     private static Object getFieldValue( Field field, ResultSet resultSet )
             throws SQLException {
         Class<?> fieldType = field.getType();
@@ -36,17 +36,17 @@ public abstract class GenericSelect {
         }
     }
 
-    public static List<Object> exeSelectQuery( String query, Object object, Connection connection )
-            throws SQLException, NoSuchMethodException, InvocationTargetException, InstantiationException,
-            IllegalAccessException {
-        List<Object> results = new ArrayList<>();
+    public static <T extends GenericEntity> List<T> exeSelectQuery( String query, Class<T> tClass, Connection connection )
+            throws SQLException, NoSuchMethodException, InvocationTargetException,
+            InstantiationException, IllegalAccessException {
+        List<T> results = new ArrayList<>();
         try ( PreparedStatement preparedStatement = connection.prepareStatement( query );
               ResultSet resultSet = preparedStatement.executeQuery() ) {
             if ( !resultSet.next() ) {
                 throw new SQLException( "0 row matching! ResultSet is empty." );
             } else {
                 do {
-                    Object newInstance = object.getClass().getConstructor().newInstance();
+                    T newInstance = tClass.getDeclaredConstructor().newInstance();
                     setAttributesValues( newInstance, resultSet );
                     results.add( newInstance );
                 }
@@ -61,14 +61,14 @@ public abstract class GenericSelect {
         return QueryUtil.getTableName( object.getClass() );
     }
 
-    public static String writeQueryFindAll( Object object, List<String> columnsNames ) {
-        return QueryUtil.selectColumns( columnsNames ) + " FROM " + QueryUtil.getTableName( object.getClass() );
+    public static <T extends GenericEntity> String writeQueryFindAll( Class<T> tClass, List<String> columnsNames ) {
+        return QueryUtil.selectColumns( columnsNames ) + " FROM " + QueryUtil.getTableName( tClass );
     }
 
-    public static List<Object> findAll( Object object, List<String> columnsNames, Connection connection )
+    public static <T extends GenericEntity> List<T> findAll( Class<T> tClass, List<String> columnsNames, Connection connection )
             throws SQLException, InvocationTargetException, NoSuchMethodException,
             InstantiationException, IllegalAccessException {
-        String query = writeQueryFindAll( object, columnsNames );
-        return exeSelectQuery( query, object, connection );
+        String query = writeQueryFindAll( tClass, columnsNames );
+        return exeSelectQuery( query, tClass, connection );
     }
 }
