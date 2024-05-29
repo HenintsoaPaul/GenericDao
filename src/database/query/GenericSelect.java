@@ -60,21 +60,40 @@ public class GenericSelect {
         return results;
     }
 
+    /*
+     * PAGINATION
+     */
+    private static String returnPaginationQuery( List<String> columnsNames, int offSet, int limit, String DB_TYPE, String from ) {
+        return switch ( DB_TYPE ) {
+            case "pg", "mysql" -> {
+                String pagination = " LIMIT " + limit + " OFFSET " + offSet,
+                        select = QueryUtil.selectColumns( columnsNames );
+                yield select + " FROM " + from + pagination;
+            }
+            case "mssql" -> {
+                String rowNumber = ", ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn FROM ",
+                        subQuery = QueryUtil.selectColumns( columnsNames ) + rowNumber + from;
+                yield "SELECT * FROM ( " + subQuery + " ) WHERE rn > " + offSet + " AND rn <= " + ( offSet + limit );
+            }
+            default -> "";
+        };
+    }
+
 
     // FIND ALL
     public static String fromFindAll( Object object ) {
         return QueryUtil.getTableName( object.getClass() );
     }
 
-    public static <T extends GenericEntity> String writeQueryFindAll( Class<T> tClass, List<String> columnsNames ) {
-        return QueryUtil.selectColumns( columnsNames ) + " FROM " + QueryUtil.getTableName( tClass );
+    public static String writeQueryFindAll( Object object, List<String> columnsNames ) {
+        return QueryUtil.selectColumns( columnsNames ) + " FROM " + QueryUtil.getTableName( object.getClass() );
     }
 
-    public static <T extends GenericEntity> List<T> findAll( Class<T> tClass, List<String> columnsNames, Connection connection )
+    public static <T extends GenericEntity> List<T> findAll( Object object, List<String> columnsNames, Connection connection )
             throws SQLException, InvocationTargetException, NoSuchMethodException,
             InstantiationException, IllegalAccessException {
-        String query = writeQueryFindAll( tClass, columnsNames );
-        return exeSelectQuery( query, tClass, connection );
+        String query = writeQueryFindAll( object, columnsNames );
+        return exeSelectQuery( query, ( Class<T> ) object.getClass(), connection );
     }
 
 
@@ -145,6 +164,26 @@ public class GenericSelect {
             throws SQLException, InvocationTargetException, NoSuchMethodException,
             InstantiationException, IllegalAccessException {
         String query = writeQueryFindInInterval( object, columnsNames, fieldName, minValue, maxValue );
+        return exeSelectQuery( query, ( Class<T> ) object.getClass(), connection );
+    }
+
+
+    // FIND ALL PAGINATION
+    public static String writeQueryFindAll( Object object, List<String> columnsNames,
+                                            int offSet, int limit, String DB_TYPE ) {
+        // Query without pagination
+        if ( offSet == 0 && limit == 0 ) {
+            return writeQueryFindAll( object, columnsNames );
+        }
+        String from = fromFindAll( object );
+        return returnPaginationQuery( columnsNames, offSet, limit, DB_TYPE, from );
+    }
+
+    public static <T extends GenericEntity> List<T> findAll( Object object, List<String> columnsNames, Connection connection,
+                                                             int offSet, int limit, String DB_TYPE )
+            throws SQLException, InvocationTargetException, NoSuchMethodException,
+            InstantiationException, IllegalAccessException {
+        String query = writeQueryFindAll( object, columnsNames, offSet, limit, DB_TYPE );
         return exeSelectQuery( query, ( Class<T> ) object.getClass(), connection );
     }
 }
