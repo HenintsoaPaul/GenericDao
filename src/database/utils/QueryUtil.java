@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 
 public class QueryUtil {
     public static String getTableName( Class<?> clazz ) {
@@ -70,5 +71,11 @@ public class QueryUtil {
                 return nbRows;
             }
         }
+    }
+
+    public static String selectColumns( List<String> columnsNames ) {
+        String columns = columnsNames == null || columnsNames.isEmpty() ?
+                "*" : String.join( ", ", columnsNames );
+        return "SELECT " + columns;
     }
 }
