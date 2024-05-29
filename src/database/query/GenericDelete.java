@@ -26,13 +26,13 @@ public class GenericDelete {
     public static int deleteById( Object object, int pkValue, Connection connection )
             throws SQLException {
         Class<?> clazz = object.getClass();
-        String tableName = QueryUtil.getTableName( clazz );
         Field pkField = QueryUtil.getPrimaryKeyField( clazz );
         if ( pkField == null ) {
-            throw new GenericDaoException( "Cannot perform delete query 'coz there is no PRIMARY KEY in the relation \"" + tableName + "\"." );
+            throw new GenericDaoException( "Cannot perform delete query 'coz there is no PRIMARY KEY in the object." +
+                    " Please, verify your annotations." );
         }
         String pkColumnName = QueryUtil.getColumnName( pkField ),
-                query = "DELETE FROM " + tableName + " WHERE " + pkColumnName + " = " + pkValue;
+                query = "DELETE FROM " + QueryUtil.getTableName( clazz ) + " WHERE " + pkColumnName + " = " + pkValue;
         return QueryUtil.executeUpdateQuery( query, connection, 1 );
     }
 

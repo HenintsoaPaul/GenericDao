@@ -63,7 +63,7 @@ public class QueryUtil {
                 connection.setAutoCommit( false );
                 int nbRows = preparedStatement.executeUpdate();
                 if ( nbRows != nbRowsToUpdate ) {
-                    throw new GenericDaoException( " An Exception occurred during the query. " + nbRows + " row(s) affected\n" +
+                    throw new GenericDaoException( " An Exception occurred during the query. " + nbRows + " row(s) affected" +
                             ", but " + nbRowsToUpdate + " row(s) was supposed to be affected." );
                 }
                 connection.commit();
