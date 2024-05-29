@@ -1,7 +1,7 @@
 package database.query;
 
 import database.connector.DatabaseConnector;
-import database.utils.Util;
+import database.utils.QueryUtil;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -14,11 +14,11 @@ public class GenericInsert {
     public static String writeInsertQuery( Object object )
             throws IllegalAccessException {
         Class<?> clazz = object.getClass();
-        String tableName = Util.getTableName( clazz );
+        String tableName = QueryUtil.getTableName( clazz );
         List<String> listColNames = new ArrayList<>(), listColValues = new ArrayList<>();
         for ( Field field : clazz.getDeclaredFields() ) {
-            listColNames.add( Util.getColumnName( field ) );
-            listColValues.add( Util.getColumnValue( field, object ) );
+            listColNames.add( QueryUtil.getColumnName( field ) );
+            listColValues.add( QueryUtil.getColumnValue( field, object ) );
         }
         String columns = String.join( ", ", listColNames ),
                 values = String.join( ", ", listColValues );

@@ -5,7 +5,7 @@ import annotations.TableAnnotation;
 
 import java.lang.reflect.Field;
 
-public class Util {
+public class QueryUtil {
     public static String getTableName( Class<?> clazz ) {
         return clazz.isAnnotationPresent( TableAnnotation.class ) ?
                 clazz.getAnnotation( TableAnnotation.class ).tableName() : clazz.getSimpleName();
