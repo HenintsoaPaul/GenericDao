@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@SuppressWarnings( "unchecked" )
 public class GenericSelect {
     private static Object getFieldValue( Field field, ResultSet resultSet )
             throws SQLException {
