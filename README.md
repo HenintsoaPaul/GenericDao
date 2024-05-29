@@ -40,6 +40,33 @@ public class Main {
 
 ## Query
 
+Let us admit that you have the following class:
+```java
+package entity;
+
+import annotations.ColumnAnnotation;
+import annotations.TableAnnotation;
+
+@TableAnnotation( tableName = "emp" )
+public class Employee {
+    @ColumnAnnotation( columnName = "id_emp", primaryKey = true )
+    int idEmployee;
+    @ColumnAnnotation( columnName = "nom_emp", quoted = true )
+    String employeeName;
+    @ColumnAnnotation( columnName = "date_naissance", quoted = true )
+    String employeeBornDate;
+
+    public Employee() {
+    }
+
+    public Employee( int idEmployee, String employeeName, String employeeBornDate ) {
+        this.idEmployee = idEmployee;
+        this.employeeName = employeeName;
+        this.employeeBornDate = employeeBornDate;
+    }
+}
+```
+
 ### Insert Query
 
 ```java
@@ -62,6 +89,33 @@ public class Main {
     // 2nd method
     int nbRows = GenericInsert.insert( emp, databaseConnector.getConnection() );
     System.out.println( nbRows + " row(s) inserted." );
+  }
+}
+```
+
+### Delete Query
+
+```java
+import database.connector.ConnectorFactory;
+import database.connector.DatabaseConnector;
+import database.query.GenericDelete;
+import entity.Employee;
+
+public class Main {
+  public static void main( String[] args )
+          throws Exception {
+    String config = "db.properties";
+    DatabaseConnector databaseConnector = ConnectorFactory.getConnector( config );
+
+    // Delete by idPrimaryKey
+    int nbRows = GenericDelete.deleteById( new Employee(), 1, databaseConnector );
+    // int nbRows = GenericDelete.deleteById( new Employee(), 1, databaseConnector.getConnection() );
+    System.out.println( nbRows + " row(s) deleted." );
+    
+    // Delete all
+    int nbRows = GenericDelete.deleteAll( new Employee(), databaseConnector );
+    // int nbRows = GenericDelete.deleteAll( new Employee(), databaseConnector.getConnection() );
+    System.out.println( nbRows + " row(s) deleted." );
   }
 }
 ```
