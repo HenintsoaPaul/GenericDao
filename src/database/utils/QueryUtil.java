@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 public class QueryUtil {
     public static String getTableName( Class<?> clazz ) {
@@ -39,7 +40,7 @@ public class QueryUtil {
     public static Field getPrimaryKeyField( Class<?> clazz ) {
         for ( Field field : clazz.getDeclaredFields() ) {
             ColumnAnnotation columnAnnotation = field.getAnnotation( ColumnAnnotation.class );
-            if ( columnAnnotation != null && columnAnnotation.primaryKey()) {
+            if ( columnAnnotation != null && columnAnnotation.primaryKey() ) {
                 return field;
             }
         }
@@ -47,11 +48,10 @@ public class QueryUtil {
     }
 
     /**
-     *
-     * @param query The query to be executed.
-     * @param connection An SQL connection to the database.
+     * @param query          The query to be executed.
+     * @param connection     An SQL connection to the database.
      * @param nbRowsToUpdate The estimated number of rows to be affected by the query.
-     *  When we do not know in advance how many rows will be affected, use -1.
+     *                       When we do not know in advance how many rows will be affected, use -1.
      * @return The number of rows that have been really affected.
      */
     public static int executeUpdateQuery( String query, Connection connection, int nbRowsToUpdate )
@@ -59,8 +59,7 @@ public class QueryUtil {
         try ( PreparedStatement preparedStatement = connection.prepareStatement( query ) ) {
             if ( nbRowsToUpdate == -1 ) {
                 return preparedStatement.executeUpdate();
-            }
-            else {
+            } else {
                 connection.setAutoCommit( false );
                 int nbRows = preparedStatement.executeUpdate();
                 if ( nbRows != nbRowsToUpdate ) {
@@ -77,5 +76,10 @@ public class QueryUtil {
         String columns = columnsNames == null || columnsNames.isEmpty() ?
                 "*" : String.join( ", ", columnsNames );
         return "SELECT " + columns;
+    }
+
+    public static Map<String, String> getProperties( String configFilePath ) {
+        ConfigFileReader configReader = new ConfigFileReader( configFilePath );
+        return configReader.loadProperties();
     }
 }

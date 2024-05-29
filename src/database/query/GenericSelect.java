@@ -2,6 +2,7 @@ package database.query;
 
 import annotations.ColumnAnnotation;
 import database.GenericDaoException;
+import database.utils.ConfigFileReader;
 import database.utils.QueryUtil;
 
 import java.lang.reflect.Field;
@@ -13,6 +14,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @SuppressWarnings( "unchecked" )
@@ -80,7 +82,7 @@ public class GenericSelect {
 
 
     // FIND ALL
-    public static String fromFindAll( Object object ) {
+    private static String fromFindAll( Object object ) {
         return QueryUtil.getTableName( object.getClass() );
     }
 
@@ -97,7 +99,7 @@ public class GenericSelect {
 
 
     // FIND BY CRITERIA
-    public static String fromFindByCriteria( Object object ) {
+    private static String fromFindByCriteria( Object object ) {
         Class<?> clazz = object.getClass();
         String tableName = QueryUtil.getTableName( clazz ),
                 criteria = Arrays.stream( clazz.getDeclaredFields() )
@@ -136,7 +138,7 @@ public class GenericSelect {
 
 
     // FIND IN INTERVAL
-    public static String fromFindInInterval( Object object, String fieldName, Number minValue, Number maxValue )
+    private static String fromFindInInterval( Object object, String fieldName, Number minValue, Number maxValue )
             throws GenericDaoException {
         Class<?> clazz = object.getClass();
         String tableName = QueryUtil.getTableName( clazz ), columnName = "";
@@ -221,5 +223,48 @@ public class GenericSelect {
             InstantiationException, IllegalAccessException {
         String query = writeQueryFindInInterval( object, columnsNames, offSet, limit, DB_TYPE, fieldName, minValue, maxValue );
         return exeSelectQuery( query, ( Class<T> ) object.getClass(), connection );
+    }
+
+
+    // PAGINATION USING db.properties FILE
+
+    /**
+     * Find all rows with pagination functionality using configuration in the confs/ folder.
+     */
+    public static <T extends GenericEntity> List<T> findAll( Object object, List<String> columnsNames, Connection connection, String configFilePath )
+            throws SQLException, InvocationTargetException, NoSuchMethodException,
+            InstantiationException, IllegalAccessException {
+        Map<String, String> properties = QueryUtil.getProperties( configFilePath );
+        String DB_TYPE = properties.get( "db" );
+        int offSet = Integer.parseInt( properties.get( "offSet" ) ),
+                limit = Integer.parseInt( properties.get( "limit" ) );
+        return findAll( object, columnsNames, connection, offSet, limit, DB_TYPE );
+    }
+
+    /**
+     * Find by criteria with pagination functionality using configuration in the confs/ folder.
+     */
+    public static <T extends GenericEntity> List<T> findByCriteria( Object object, List<String> columnsNames, Connection connection, String configFilePath )
+            throws SQLException, InvocationTargetException, NoSuchMethodException,
+            InstantiationException, IllegalAccessException {
+        Map<String, String> properties = QueryUtil.getProperties( configFilePath );
+        String DB_TYPE = properties.get( "db" );
+        int offSet = Integer.parseInt( properties.get( "offSet" ) ),
+                limit = Integer.parseInt( properties.get( "limit" ) );
+        return findByCriteria( object, columnsNames, connection, offSet, limit, DB_TYPE );
+    }
+
+    /**
+     * Find in interval with pagination functionality using configuration in the confs/ folder.
+     */
+    public static <T extends GenericEntity> List<T> findInInterval( Object object, List<String> columnsNames, Connection connection,
+                                                                    String configFilePath, String fieldName, Number minValue, Number maxValue )
+            throws SQLException, InvocationTargetException, NoSuchMethodException,
+            InstantiationException, IllegalAccessException {
+        Map<String, String> properties = QueryUtil.getProperties( configFilePath );
+        String DB_TYPE = properties.get( "db" );
+        int offSet = Integer.parseInt( properties.get( "offSet" ) ),
+                limit = Integer.parseInt( properties.get( "limit" ) );
+        return findInInterval( object, columnsNames, connection, offSet, limit, DB_TYPE, fieldName, minValue, maxValue );
     }
 }
