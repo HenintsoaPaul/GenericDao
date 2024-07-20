@@ -1,5 +1,7 @@
 package database.query;
 
+import annotations.ColumnAnnotation;
+import database.GenericDaoException;
 import database.connector.DatabaseConnector;
 import database.utils.QueryUtil;
 
@@ -10,15 +12,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GenericInsert {
+    /**
+     * Insert a row using the fields value of the param object.
+     *
+     * @param object An object containing the values of the row.
+     * @return The string representing the insert query to be executed.
+     */
     public static String writeInsertQuery( Object object )
-            throws IllegalAccessException {
+            throws IllegalAccessException, GenericDaoException {
         Class<?> clazz = object.getClass();
         String tableName = QueryUtil.getTableName( clazz );
-        List<String> listColNames = new ArrayList<>(), listColValues = new ArrayList<>();
-        for ( Field field : clazz.getDeclaredFields() ) {
+
+        List<String> listColNames = new ArrayList<>(),
+                listColValues = new ArrayList<>();
+        for ( Field field : QueryUtil.getColumnsFields( clazz ) ) {
             listColNames.add( QueryUtil.getColumnName( field ) );
             listColValues.add( QueryUtil.getColumnValue( field, object ) );
         }
+
         String columns = String.join( ", ", listColNames ),
                 values = String.join( ", ", listColValues );
         return "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")";

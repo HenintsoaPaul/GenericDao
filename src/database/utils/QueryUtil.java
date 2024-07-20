@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -17,34 +18,49 @@ public class QueryUtil {
                 clazz.getAnnotation( TableAnnotation.class ).tableName() : clazz.getSimpleName();
     }
 
-    public static String getColumnName( Field field ) {
+    public static String getColumnName( Field field )
+            throws GenericDaoException {
+        String fieldName = field.getName();
         ColumnAnnotation columnAnnotation = field.getAnnotation( ColumnAnnotation.class );
-        if ( columnAnnotation != null ) {
-            String annotationValue = columnAnnotation.columnName();
-            return annotationValue.isEmpty() ? field.getName() : annotationValue;
+        if ( columnAnnotation == null ) {
+            throw new GenericDaoException( "Field \"" + fieldName + "\" is not a column." );
         }
-        return field.getName();
+        String annotationValue = columnAnnotation.columnName();
+        return annotationValue.isEmpty() ? fieldName : annotationValue;
     }
 
     public static String getColumnValue( Field field, Object object )
-            throws IllegalAccessException {
+            throws IllegalAccessException, GenericDaoException {
         field.setAccessible( true );
         String columnValue = field.get( object ).toString();
         ColumnAnnotation columnAnnotation = field.getAnnotation( ColumnAnnotation.class );
-        if ( columnAnnotation != null ) {
-            return columnAnnotation.quoted() ? "'" + columnValue + "'" : columnValue;
+        if ( columnAnnotation == null ) {
+            throw new GenericDaoException( "Field \"" + field.getName() + "\" is not a column." );
         }
-        return columnValue;
+        return columnAnnotation.quoted() ? "'" + columnValue + "'" : columnValue;
     }
 
     public static Field getPrimaryKeyField( Class<?> clazz ) {
-        for ( Field field : clazz.getDeclaredFields() ) {
+        for ( Field field : getColumnsFields( clazz ) ) {
             ColumnAnnotation columnAnnotation = field.getAnnotation( ColumnAnnotation.class );
-            if ( columnAnnotation != null && columnAnnotation.primaryKey() ) {
-                return field;
-            }
+            if ( columnAnnotation.primaryKey() ) return field;
         }
         return null;
+    }
+
+    /**
+     * Loop through the fields of `clazz` then return a list of the fields
+     * annotated with `ColumnAnnotation`.
+     *
+     * @param clazz The class containing the fields.
+     * @return A list of the fields in `clazz` annotated with `ColumnAnnotation`.
+     */
+    public static List<Field> getColumnsFields( Class<?> clazz ) {
+        List<Field> fields = new ArrayList<>();
+        for ( Field field : clazz.getDeclaredFields() ) {
+            if ( field.isAnnotationPresent( ColumnAnnotation.class ) ) fields.add( field );
+        }
+        return fields;
     }
 
     /**

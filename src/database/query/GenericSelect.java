@@ -117,7 +117,7 @@ public class GenericSelect {
                                 String strColumnValue = columnValue instanceof Number ?
                                         columnValue.toString() : "'" + columnValue + "'";
                                 return QueryUtil.getColumnName( field ) + " = " + strColumnValue;
-                            } catch ( IllegalAccessException e ) {
+                            } catch ( IllegalAccessException | GenericDaoException e ) {
                                 throw new RuntimeException( e );
                             }
                         } )

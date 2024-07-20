@@ -1,5 +1,6 @@
 package database.query;
 
+import annotations.ColumnAnnotation;
 import database.GenericDaoException;
 import database.connector.DatabaseConnector;
 import database.utils.QueryUtil;
@@ -30,7 +31,7 @@ public class GenericUpdate {
                 columnName, columnValue, values;
 
         List<String> listColumnsValues = new ArrayList<>();
-        for ( Field field : clazz.getDeclaredFields() ) {
+        for ( Field field : QueryUtil.getColumnsFields( clazz ) ) {
             if ( field != pkField ) {
                 columnName = QueryUtil.getColumnName( field );
                 columnValue = QueryUtil.getColumnValue( field, object );
@@ -39,7 +40,8 @@ public class GenericUpdate {
         }
         values = String.join( ", ", listColumnsValues );
 
-        return "UPDATE " + QueryUtil.getTableName( clazz ) + " SET " + values + " WHERE " + pkColumnName + " = " + pkColumnValue;
+        return "UPDATE " + QueryUtil.getTableName( clazz ) + " SET " + values +
+                " WHERE " + pkColumnName + " = " + pkColumnValue;
     }
 
     public static int update( Object object, Connection connection )
@@ -50,7 +52,7 @@ public class GenericUpdate {
 
     public static int update( Object object, DatabaseConnector databaseConnector )
             throws SQLException, ClassNotFoundException, IllegalAccessException {
-        try (Connection connection = databaseConnector.getConnection()) {
+        try ( Connection connection = databaseConnector.getConnection() ) {
             return update( object, connection );
         }
     }
