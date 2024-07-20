@@ -5,7 +5,7 @@ import database.query.select.FindAll;
 import database.query.select.FindCriteria;
 import database.query.select.FindInterval;
 import database.utils.PaginationUtil;
-import database.utils.QueryUtil;
+import database.utils.PropertiesUtil;
 import database.utils.TypeCastUtil;
 
 import java.lang.reflect.InvocationTargetException;
@@ -44,7 +44,7 @@ public class GenericSelect {
     /**
      * Get all the rows in the relation(table).
      *
-     * @param object An instance of the entity linked to the relation.
+     * @param object       An instance of the entity linked to the relation.
      * @param columnsNames The names of the queried columns.
      * @return A list containing all the rows of the relation.
      */
@@ -61,8 +61,8 @@ public class GenericSelect {
      * is set to null, all the columns will be used to build the criteria. Otherwise, criteria
      * is build from the names of the columns in `criteriaColumns`.
      *
-     * @param object An instance of the entity linked to the relation.
-     * @param columnsNames The names of the queried columns.
+     * @param object          An instance of the entity linked to the relation.
+     * @param columnsNames    The names of the queried columns.
      * @param criteriaColumns The names of the columns to be used as criteria.
      * @return A list containing all the rows of the relation.
      */
@@ -86,41 +86,22 @@ public class GenericSelect {
     }
 
 
-    // FIND ALL WITH PAGINATION
-    public static String writeQueryFindAll( Object object, List<String> columnsNames, int offSet, int limit, String DB_TYPE )
-            throws GenericDaoException {
-        if ( offSet == 0 && limit == 0 ) { // Query without pagination
-            return all.query( object, columnsNames );
-        }
-        String from = all.from( object );
-        return PaginationUtil.paginationQuery( columnsNames, offSet, limit, DB_TYPE, from );
-    }
-
+    // WITH PAGINATION
     public static <T extends GenericEntity> List<T> findAll(
             Object object, List<String> columnsNames, Connection connection,
             int offSet, int limit, String DB_TYPE )
             throws SQLException, InvocationTargetException, NoSuchMethodException,
             InstantiationException, IllegalAccessException {
-        String query = writeQueryFindAll( object, columnsNames, offSet, limit, DB_TYPE );
+        String query = all.queryPagination( object, columnsNames, offSet, limit, DB_TYPE );
         return exeSelectQuery( query, ( Class<T> ) object.getClass(), connection );
     }
 
-
-    // FIND BY CRITERIA WITH PAGINATION
-    public static String writeQueryFindByCriteria( Object object, List<String> columnsNames, List<String> criteriaColumns, int offSet, int limit, String DB_TYPE )
-            throws GenericDaoException {
-        if ( offSet == 0 && limit == 0 ) { // Query without pagination
-            return criteria.query( object, columnsNames, criteriaColumns );
-        }
-        String from = criteria.from( object, criteriaColumns );
-        return PaginationUtil.paginationQuery( columnsNames, offSet, limit, DB_TYPE, from );
-    }
-
-    public static <T extends GenericEntity> List<T> findByCriteria( Object object, List<String> columnsNames, List<String> criteriaColumns, Connection connection,
-                                                                    int offSet, int limit, String DB_TYPE )
+    public static <T extends GenericEntity> List<T> findByCriteria(
+            Object object, List<String> columnsNames, List<String> criteriaColumns,
+            Connection connection, int offSet, int limit, String DB_TYPE )
             throws SQLException, InvocationTargetException, NoSuchMethodException,
             InstantiationException, IllegalAccessException {
-        String query = writeQueryFindByCriteria( object, columnsNames, criteriaColumns, offSet, limit, DB_TYPE );
+        String query = criteria.queryPagination( object, columnsNames, criteriaColumns, offSet, limit, DB_TYPE );
         return exeSelectQuery( query, ( Class<T> ) object.getClass(), connection );
     }
 
@@ -154,10 +135,9 @@ public class GenericSelect {
     public static <T extends GenericEntity> List<T> findAll( Object object, List<String> columnsNames, Connection connection, String configFilePath )
             throws SQLException, InvocationTargetException, NoSuchMethodException,
             InstantiationException, IllegalAccessException {
-        Map<String, String> properties = QueryUtil.getProperties( configFilePath );
-        String DB_TYPE = properties.get( "db" );
-        int offSet = Integer.parseInt( properties.get( "offSet" ) ),
-                limit = Integer.parseInt( properties.get( "limit" ) );
+        String DB_TYPE = PropertiesUtil.getDbType( configFilePath );
+        int offSet = PropertiesUtil.getOffset( configFilePath ),
+                limit = PropertiesUtil.getLimit( configFilePath );
         return findAll( object, columnsNames, connection, offSet, limit, DB_TYPE );
     }
 
@@ -167,10 +147,9 @@ public class GenericSelect {
     public static <T extends GenericEntity> List<T> findByCriteria( Object object, List<String> columnsNames, List<String> criteriaColumns, Connection connection, String configFilePath )
             throws SQLException, InvocationTargetException, NoSuchMethodException,
             InstantiationException, IllegalAccessException {
-        Map<String, String> properties = QueryUtil.getProperties( configFilePath );
-        String DB_TYPE = properties.get( "db" );
-        int offSet = Integer.parseInt( properties.get( "offSet" ) ),
-                limit = Integer.parseInt( properties.get( "limit" ) );
+        String DB_TYPE = PropertiesUtil.getDbType( configFilePath );
+        int offSet = PropertiesUtil.getOffset( configFilePath ),
+                limit = PropertiesUtil.getLimit( configFilePath );
         return findByCriteria( object, columnsNames, criteriaColumns, connection, offSet, limit, DB_TYPE );
     }
 
@@ -181,10 +160,9 @@ public class GenericSelect {
                                                                     String configFilePath, String fieldName, Number minValue, Number maxValue )
             throws SQLException, InvocationTargetException, NoSuchMethodException,
             InstantiationException, IllegalAccessException {
-        Map<String, String> properties = QueryUtil.getProperties( configFilePath );
-        String DB_TYPE = properties.get( "db" );
-        int offSet = Integer.parseInt( properties.get( "offSet" ) ),
-                limit = Integer.parseInt( properties.get( "limit" ) );
+        String DB_TYPE = PropertiesUtil.getDbType( configFilePath );
+        int offSet = PropertiesUtil.getOffset( configFilePath ),
+                limit = PropertiesUtil.getLimit( configFilePath );
         return findInInterval( object, columnsNames, connection, offSet, limit, DB_TYPE, fieldName, minValue, maxValue );
     }
 }

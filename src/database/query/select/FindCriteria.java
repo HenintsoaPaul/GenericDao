@@ -1,6 +1,7 @@
 package database.query.select;
 
 import database.GenericDaoException;
+import database.utils.PaginationUtil;
 import database.utils.QueryUtil;
 
 import java.lang.reflect.Field;
@@ -34,5 +35,14 @@ public class FindCriteria {
     public String query( Object object, List<String> columnsNames, List<String> criteriaColumns ) {
         String columns = QueryUtil.selectColumns( columnsNames );
         return columns + " FROM " + from( object, criteriaColumns );
+    }
+
+    public String queryPagination( Object object, List<String> columnsNames, List<String> criteriaColumns, int offSet, int limit, String DB_TYPE )
+            throws GenericDaoException {
+        if ( offSet == 0 && limit == 0 ) { // Query without pagination
+            return query( object, columnsNames, criteriaColumns );
+        }
+        String from = from( object, criteriaColumns );
+        return PaginationUtil.paginationQuery( columnsNames, offSet, limit, DB_TYPE, from );
     }
 }

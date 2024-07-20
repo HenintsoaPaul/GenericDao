@@ -10,7 +10,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class QueryUtil {
     public static String getTableName( Class<?> clazz ) {
@@ -95,10 +94,5 @@ public class QueryUtil {
         String columns = columnsNames == null || columnsNames.isEmpty() ?
                 "*" : String.join( ", ", columnsNames );
         return "SELECT " + columns;
-    }
-
-    public static Map<String, String> getProperties( String configFilePath ) {
-        ConfigFileReader configReader = new ConfigFileReader( configFilePath );
-        return configReader.loadProperties();
     }
 }
