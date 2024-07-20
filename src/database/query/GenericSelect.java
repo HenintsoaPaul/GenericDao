@@ -37,7 +37,7 @@ public class GenericSelect {
 
     private static void setAttributesValues( Object newInstance, ResultSet resultSet )
             throws SQLException, IllegalAccessException {
-        for ( Field field : newInstance.getClass().getDeclaredFields() ) {
+        for ( Field field : QueryUtil.getColumnsFields( newInstance.getClass() ) ) {
             field.setAccessible( true );
             field.set( newInstance, getFieldValue( field, resultSet ) );
         }

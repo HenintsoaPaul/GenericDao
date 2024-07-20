@@ -38,22 +38,29 @@ public class Main {
 }
 ```
 
-## Query
-
 ***
 **N.B**:
-
-1. All fields of Employee.java that are columns of the relation must be annotated with `@ColumnAnnotation`.
-    
-2. All entities like Employee.java must implement the `GenericEntity.java` interface.
+1. The fields of an entity (like Employee.java in the bellow example) 
+that are columns of the relation must be annotated with `@ColumnAnnotation`.
+2. Each entity (like Employee.java in the bellow example) must 
+implement the `GenericEntity.java` interface.
 ***
 
-Let us admit that you have the following classes:
+## Auto-Increment
 
-- Employee.java
+**Condition**
+- The field is primary key number.
+- The field is annotated with: 
+`@ColumnAnnotation( columnName = "id", primaryKey = true, autoIncrement = true )` 
+
+**How to?**
+- Set field value to `0` before insertion.
+- Execute insertion query.
+
+## Entity Structure
 
 ```java
-package entity;
+package my_package;
 
 import annotations.ColumnAnnotation;
 import annotations.TableAnnotation;
@@ -61,13 +68,20 @@ import database.query.GenericEntity;
 
 @TableAnnotation( tableName = "emp" )
 public class Employee implements GenericEntity {
-  @ColumnAnnotation( columnName = "id_emp", primaryKey = true )
+    
+    // Columns of `emp`
+  @ColumnAnnotation( columnName = "id_emp", primaryKey = true, autoIncrement = true )
   int idEmployee;
   @ColumnAnnotation( columnName = "nom_emp", quoted = true )
   String employeeName;
   @ColumnAnnotation( columnName = "date_naissance", quoted = true )
   String employeeBornDate;
+  
+    // Not columns of `emp`
+  double salary;
+  String homeLocation;
 
+    // Constructors
   public Employee() {
   }
 
@@ -76,10 +90,13 @@ public class Employee implements GenericEntity {
     this.employeeName = employeeName;
     this.employeeBornDate = employeeBornDate;
   }
+  
+    // Getters and Setters ...
 }
 ```
 
-- Main.java
+## Use case example
+
 ```java
 import java.sql.SQLException;
 

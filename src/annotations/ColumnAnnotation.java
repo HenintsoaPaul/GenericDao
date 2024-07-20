@@ -14,7 +14,5 @@ public @interface ColumnAnnotation {
 
     boolean primaryKey() default false;
 
-    boolean nullable() default false;
-
-    boolean unique() default false;
+    boolean autoIncrement() default false;
 }

@@ -32,10 +32,13 @@ public class QueryUtil {
     public static String getColumnValue( Field field, Object object )
             throws IllegalAccessException, GenericDaoException {
         field.setAccessible( true );
-        String columnValue = field.get( object ).toString();
         ColumnAnnotation columnAnnotation = field.getAnnotation( ColumnAnnotation.class );
         if ( columnAnnotation == null ) {
             throw new GenericDaoException( "Field \"" + field.getName() + "\" is not a column." );
+        }
+        String columnValue = field.get( object ).toString();
+        if ( columnAnnotation.primaryKey() && columnAnnotation.autoIncrement() ) {
+            if ( columnValue.equalsIgnoreCase( "0" ) ) return "default";
         }
         return columnAnnotation.quoted() ? "'" + columnValue + "'" : columnValue;
     }
