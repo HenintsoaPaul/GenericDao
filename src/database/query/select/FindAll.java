@@ -4,7 +4,7 @@ import database.utils.QueryUtil;
 
 import java.util.List;
 
-public class FindAll implements IFind {
+public class FindAll {
     public String from( Object object ) {
         return QueryUtil.getTableName( object.getClass() );
     }

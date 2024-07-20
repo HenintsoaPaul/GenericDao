@@ -41,6 +41,13 @@ public class GenericSelect {
         return results;
     }
 
+    /**
+     * Get all the rows in the relation(table).
+     *
+     * @param object An instance of the entity linked to the relation.
+     * @param columnsNames The names of the queried columns.
+     * @return A list containing all the rows of the relation.
+     */
     public static <T extends GenericEntity> List<T> findAll(
             Object object, List<String> columnsNames, Connection connection )
             throws SQLException, InvocationTargetException, NoSuchMethodException,
@@ -49,11 +56,21 @@ public class GenericSelect {
         return exeSelectQuery( query, ( Class<T> ) object.getClass(), connection );
     }
 
+    /**
+     * Get all the rows matching the criteria in the relation(table). If `criteriaColumns`
+     * is set to null, all the columns will be used to build the criteria. Otherwise, criteria
+     * is build from the names of the columns in `criteriaColumns`.
+     *
+     * @param object An instance of the entity linked to the relation.
+     * @param columnsNames The names of the queried columns.
+     * @param criteriaColumns The names of the columns to be used as criteria.
+     * @return A list containing all the rows of the relation.
+     */
     public static <T extends GenericEntity> List<T> findByCriteria(
-            Object object, List<String> columnsNames, Connection connection )
+            Object object, List<String> columnsNames, List<String> criteriaColumns, Connection connection )
             throws SQLException, InvocationTargetException, NoSuchMethodException,
             InstantiationException, IllegalAccessException {
-        String query = criteria.query( object, columnsNames );
+        String query = criteria.query( object, columnsNames, criteriaColumns );
         System.out.println( query );
         return exeSelectQuery( query, ( Class<T> ) object.getClass(), connection );
     }
@@ -90,20 +107,20 @@ public class GenericSelect {
 
 
     // FIND BY CRITERIA WITH PAGINATION
-    public static String writeQueryFindByCriteria( Object object, List<String> columnsNames, int offSet, int limit, String DB_TYPE )
+    public static String writeQueryFindByCriteria( Object object, List<String> columnsNames, List<String> criteriaColumns, int offSet, int limit, String DB_TYPE )
             throws GenericDaoException {
         if ( offSet == 0 && limit == 0 ) { // Query without pagination
-            return criteria.query( object, columnsNames );
+            return criteria.query( object, columnsNames, criteriaColumns );
         }
-        String from = criteria.from( object );
+        String from = criteria.from( object, criteriaColumns );
         return PaginationUtil.paginationQuery( columnsNames, offSet, limit, DB_TYPE, from );
     }
 
-    public static <T extends GenericEntity> List<T> findByCriteria( Object object, List<String> columnsNames, Connection connection,
+    public static <T extends GenericEntity> List<T> findByCriteria( Object object, List<String> columnsNames, List<String> criteriaColumns, Connection connection,
                                                                     int offSet, int limit, String DB_TYPE )
             throws SQLException, InvocationTargetException, NoSuchMethodException,
             InstantiationException, IllegalAccessException {
-        String query = writeQueryFindByCriteria( object, columnsNames, offSet, limit, DB_TYPE );
+        String query = writeQueryFindByCriteria( object, columnsNames, criteriaColumns, offSet, limit, DB_TYPE );
         return exeSelectQuery( query, ( Class<T> ) object.getClass(), connection );
     }
 
@@ -147,14 +164,14 @@ public class GenericSelect {
     /**
      * Find by criteria with pagination functionality using configuration in the confs/ folder.
      */
-    public static <T extends GenericEntity> List<T> findByCriteria( Object object, List<String> columnsNames, Connection connection, String configFilePath )
+    public static <T extends GenericEntity> List<T> findByCriteria( Object object, List<String> columnsNames, List<String> criteriaColumns, Connection connection, String configFilePath )
             throws SQLException, InvocationTargetException, NoSuchMethodException,
             InstantiationException, IllegalAccessException {
         Map<String, String> properties = QueryUtil.getProperties( configFilePath );
         String DB_TYPE = properties.get( "db" );
         int offSet = Integer.parseInt( properties.get( "offSet" ) ),
                 limit = Integer.parseInt( properties.get( "limit" ) );
-        return findByCriteria( object, columnsNames, connection, offSet, limit, DB_TYPE );
+        return findByCriteria( object, columnsNames, criteriaColumns, connection, offSet, limit, DB_TYPE );
     }
 
     /**

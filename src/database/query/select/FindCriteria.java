@@ -4,39 +4,35 @@ import database.GenericDaoException;
 import database.utils.QueryUtil;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-public class FindCriteria implements IFind {
-    public String from( Object object ) {
+public class FindCriteria {
+    public String from( Object object, List<String> criteriaColumns ) {
         Class<?> clazz = object.getClass();
-        List<Field> fields = QueryUtil.getColumnsFields( clazz );
-        String tableName = QueryUtil.getTableName( clazz ),
-                criteria = fields.stream()
-                        .peek( field -> field.setAccessible( true ) )
-                        .filter( field -> {
-                            try {
-                                return field.get( object ) != null;
-                            } catch ( IllegalAccessException e ) {
-                                throw new RuntimeException( e );
-                            }
-                        } )
-                        .map( field -> {
-                            try {
-                                Object columnValue = field.get( object );
-                                String strColumnValue = columnValue instanceof Number ?
-                                        columnValue.toString() : "'" + columnValue + "'";
-                                return QueryUtil.getColumnName( field ) + " = " + strColumnValue;
-                            } catch ( IllegalAccessException | GenericDaoException e ) {
-                                throw new RuntimeException( e );
-                            }
-                        } )
-                        .collect( Collectors.joining( " AND " ) );
-        return tableName + ( criteria.isEmpty() ? "" : " WHERE " + criteria );
+        String criteria, colName, valueStr, foo;
+        List<String> listCriteria = new ArrayList<>();
+        try {
+            for ( Field field : QueryUtil.getColumnsFields( clazz ) ) {
+                colName = QueryUtil.getColumnName( field );
+                if ( criteriaColumns == null || criteriaColumns.contains( colName ) ) {
+                    field.setAccessible( true );
+                    Object value = field.get( object );
+                    valueStr = value instanceof Number ? value.toString() : "'" + value + "'";
+                    criteria = colName + " = " + valueStr;
+                    listCriteria.add( criteria );
+                    field.setAccessible( false );
+                }
+            }
+        } catch ( IllegalAccessException | IllegalArgumentException | GenericDaoException e ) {
+            throw new RuntimeException( e );
+        }
+        foo = listCriteria.isEmpty() ? "" : " WHERE " + String.join( " AND ", listCriteria );
+        return QueryUtil.getTableName( clazz ) + foo;
     }
 
-    public String query( Object object, List<String> columnsNames ) {
+    public String query( Object object, List<String> columnsNames, List<String> criteriaColumns ) {
         String columns = QueryUtil.selectColumns( columnsNames );
-        return columns + " FROM " + from( object );
+        return columns + " FROM " + from( object, criteriaColumns );
     }
 }
