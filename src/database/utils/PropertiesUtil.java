@@ -13,11 +13,6 @@ public abstract class PropertiesUtil {
         return properties.get( "db" );
     }
 
-    public static int getOffset( String configFilePath ) {
-        Map<String, String> properties = getProperties( configFilePath );
-        return Integer.parseInt( properties.get( "offSet" ) );
-    }
-
     public static int getLimit( String configFilePath ) {
         Map<String, String> properties = getProperties( configFilePath );
         return Integer.parseInt( properties.get( "limit" ) );

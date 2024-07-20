@@ -12,7 +12,9 @@
     db.name=my_db_name
     db.user=my_user
     db.password=my_password
+    limit=5
   # "db" possible values: pg = postgres | mssql = sql_server | mysql
+  # "limit" -> number of element per page when using pagination
     ```
 
 - Add the `generic-dao.jar` to the `lib/` folder of your project.

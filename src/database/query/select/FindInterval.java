@@ -1,6 +1,7 @@
 package database.query.select;
 
 import database.GenericDaoException;
+import database.utils.PaginationUtil;
 import database.utils.QueryUtil;
 
 import java.lang.reflect.Field;
@@ -29,5 +30,15 @@ public class FindInterval {
             throws GenericDaoException {
         String columns = QueryUtil.selectColumns( columnsNames );
         return columns + " FROM " + from( object, fieldName, minValue, maxValue );
+    }
+
+    public String queryPagination( Object object, List<String> columnsNames, int offSet, int limit,
+                                   String DB_TYPE, String fieldName, Number minValue, Number maxValue )
+            throws GenericDaoException {
+        if ( offSet == 0 && limit == 0 ) { // Query without pagination
+            return query( object, columnsNames, fieldName, minValue, maxValue );
+        }
+        String from = from( object, fieldName, minValue, maxValue );
+        return PaginationUtil.paginationQuery( columnsNames, offSet, limit, DB_TYPE, from );
     }
 }
